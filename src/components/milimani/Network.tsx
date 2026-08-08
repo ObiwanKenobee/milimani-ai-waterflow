@@ -1,4 +1,3 @@
-import { SectionHeading } from "./primitives";
 
 const chain = [
   { label: "Borehole", ai: "Source health & extraction limits" },
