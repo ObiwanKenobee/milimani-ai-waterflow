@@ -1,24 +1,38 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { Hero } from "@/components/milimani/Hero";
+import { Journey } from "@/components/milimani/Journey";
+import { Dashboard } from "@/components/milimani/Dashboard";
+import { AppAndTrace } from "@/components/milimani/AppAndTrace";
+import { Network } from "@/components/milimani/Network";
+import { Sustainability } from "@/components/milimani/Sustainability";
+import { Closing } from "@/components/milimani/Closing";
 
-// No head() here: the home route inherits title/description/og/twitter from
-// __root.tsx, and ships no og:image so serve-time hosting can inject the
-// project's social preview (explicit og:image or latest screenshot).
+const title = "Milimani Fresh AI — Water Intelligence Platform";
+const description =
+  "Milimani Fresh AI turns borehole water into an intelligent platform: AI production, real-time quality, traceability, logistics, payments and regeneration.";
+
 export const Route = createFileRoute("/")({
+  head: () => ({
+    meta: [
+      { title },
+      { name: "description", content: description },
+      { property: "og:title", content: title },
+      { property: "og:description", content: description },
+    ],
+  }),
   component: Index,
 });
 
-// IMPORTANT: Replace this placeholder. See ./README.md for routing conventions.
 function Index() {
   return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
-      />
-    </div>
+    <main>
+      <Hero />
+      <Journey />
+      <Dashboard />
+      <AppAndTrace />
+      <Network />
+      <Sustainability />
+      <Closing />
+    </main>
   );
 }
