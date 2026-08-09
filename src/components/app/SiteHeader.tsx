@@ -82,6 +82,7 @@ export function SiteHeader() {
           ) : (
             <Link
               to="/auth"
+              search={{ redirect: undefined }}
               className="flex items-center gap-1.5 rounded-lg bg-gradient-water px-3.5 py-2 text-sm font-medium text-water-foreground"
             >
               <LogIn className="size-4" /> Sign in
