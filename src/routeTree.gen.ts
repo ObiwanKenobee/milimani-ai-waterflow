@@ -14,6 +14,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ShopRouteImport } from './routes/shop'
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
+import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedCartRouteImport } from './routes/_authenticated/cart'
 import { Route as AuthenticatedCheckoutRouteImport } from './routes/_authenticated/checkout'
 import { Route as AuthenticatedOrdersIndexRouteImport } from './routes/_authenticated/orders/index'
@@ -41,6 +42,11 @@ const ShopRoute = ShopRouteImport.update({
 const AuthenticatedAccountRoute = AuthenticatedAccountRouteImport.update({
   id: '/account',
   path: '/account',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedCartRoute = AuthenticatedCartRouteImport.update({
@@ -71,6 +77,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/shop': typeof ShopRoute
   '/account': typeof AuthenticatedAccountRoute
+  '/admin': typeof AuthenticatedAdminRoute
   '/cart': typeof AuthenticatedCartRoute
   '/checkout': typeof AuthenticatedCheckoutRoute
   '/orders/$orderId': typeof AuthenticatedOrdersOrderIdRoute
@@ -81,6 +88,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/shop': typeof ShopRoute
   '/account': typeof AuthenticatedAccountRoute
+  '/admin': typeof AuthenticatedAdminRoute
   '/cart': typeof AuthenticatedCartRoute
   '/checkout': typeof AuthenticatedCheckoutRoute
   '/orders/$orderId': typeof AuthenticatedOrdersOrderIdRoute
@@ -93,6 +101,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/shop': typeof ShopRoute
   '/_authenticated/account': typeof AuthenticatedAccountRoute
+  '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/cart': typeof AuthenticatedCartRoute
   '/_authenticated/checkout': typeof AuthenticatedCheckoutRoute
   '/_authenticated/orders/$orderId': typeof AuthenticatedOrdersOrderIdRoute
@@ -105,6 +114,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/shop'
     | '/account'
+    | '/admin'
     | '/cart'
     | '/checkout'
     | '/orders/$orderId'
@@ -115,6 +125,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/shop'
     | '/account'
+    | '/admin'
     | '/cart'
     | '/checkout'
     | '/orders/$orderId'
@@ -126,6 +137,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/shop'
     | '/_authenticated/account'
+    | '/_authenticated/admin'
     | '/_authenticated/cart'
     | '/_authenticated/checkout'
     | '/_authenticated/orders/$orderId'
@@ -176,6 +188,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAccountRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/admin': {
+      id: '/_authenticated/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AuthenticatedAdminRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/cart': {
       id: '/_authenticated/cart'
       path: '/cart'
@@ -209,6 +228,7 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAccountRoute: typeof AuthenticatedAccountRoute
+  AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
   AuthenticatedCartRoute: typeof AuthenticatedCartRoute
   AuthenticatedCheckoutRoute: typeof AuthenticatedCheckoutRoute
   AuthenticatedOrdersOrderIdRoute: typeof AuthenticatedOrdersOrderIdRoute
@@ -217,6 +237,7 @@ interface AuthenticatedRouteRouteChildren {
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAccountRoute: AuthenticatedAccountRoute,
+  AuthenticatedAdminRoute: AuthenticatedAdminRoute,
   AuthenticatedCartRoute: AuthenticatedCartRoute,
   AuthenticatedCheckoutRoute: AuthenticatedCheckoutRoute,
   AuthenticatedOrdersOrderIdRoute: AuthenticatedOrdersOrderIdRoute,
