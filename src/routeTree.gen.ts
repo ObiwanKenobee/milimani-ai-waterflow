@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ShopRouteImport } from './routes/shop'
+import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
 import { Route as AuthenticatedCartRouteImport } from './routes/_authenticated/cart'
 import { Route as AuthenticatedCheckoutRouteImport } from './routes/_authenticated/checkout'
 import { Route as AuthenticatedOrdersIndexRouteImport } from './routes/_authenticated/orders/index'
@@ -36,6 +37,11 @@ const ShopRoute = ShopRouteImport.update({
   id: '/shop',
   path: '/shop',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedAccountRoute = AuthenticatedAccountRouteImport.update({
+  id: '/account',
+  path: '/account',
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedCartRoute = AuthenticatedCartRouteImport.update({
   id: '/cart',
@@ -64,6 +70,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/shop': typeof ShopRoute
+  '/account': typeof AuthenticatedAccountRoute
   '/cart': typeof AuthenticatedCartRoute
   '/checkout': typeof AuthenticatedCheckoutRoute
   '/orders/$orderId': typeof AuthenticatedOrdersOrderIdRoute
@@ -73,6 +80,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/shop': typeof ShopRoute
+  '/account': typeof AuthenticatedAccountRoute
   '/cart': typeof AuthenticatedCartRoute
   '/checkout': typeof AuthenticatedCheckoutRoute
   '/orders/$orderId': typeof AuthenticatedOrdersOrderIdRoute
@@ -84,6 +92,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/shop': typeof ShopRoute
+  '/_authenticated/account': typeof AuthenticatedAccountRoute
   '/_authenticated/cart': typeof AuthenticatedCartRoute
   '/_authenticated/checkout': typeof AuthenticatedCheckoutRoute
   '/_authenticated/orders/$orderId': typeof AuthenticatedOrdersOrderIdRoute
@@ -95,6 +104,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/shop'
+    | '/account'
     | '/cart'
     | '/checkout'
     | '/orders/$orderId'
@@ -104,6 +114,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/shop'
+    | '/account'
     | '/cart'
     | '/checkout'
     | '/orders/$orderId'
@@ -114,6 +125,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/auth'
     | '/shop'
+    | '/_authenticated/account'
     | '/_authenticated/cart'
     | '/_authenticated/checkout'
     | '/_authenticated/orders/$orderId'
@@ -157,6 +169,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ShopRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/account': {
+      id: '/_authenticated/account'
+      path: '/account'
+      fullPath: '/account'
+      preLoaderRoute: typeof AuthenticatedAccountRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/cart': {
       id: '/_authenticated/cart'
       path: '/cart'
@@ -189,6 +208,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAccountRoute: typeof AuthenticatedAccountRoute
   AuthenticatedCartRoute: typeof AuthenticatedCartRoute
   AuthenticatedCheckoutRoute: typeof AuthenticatedCheckoutRoute
   AuthenticatedOrdersOrderIdRoute: typeof AuthenticatedOrdersOrderIdRoute
@@ -196,6 +216,7 @@ interface AuthenticatedRouteRouteChildren {
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAccountRoute: AuthenticatedAccountRoute,
   AuthenticatedCartRoute: AuthenticatedCartRoute,
   AuthenticatedCheckoutRoute: AuthenticatedCheckoutRoute,
   AuthenticatedOrdersOrderIdRoute: AuthenticatedOrdersOrderIdRoute,
