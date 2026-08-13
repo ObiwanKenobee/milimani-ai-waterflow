@@ -6,7 +6,7 @@ vi.mock("@/lib/lovable-error-reporting", () => ({
   reportLovableError: vi.fn(),
 }));
 
-function Boom(): JSX.Element {
+function Boom(): never {
   throw new Error("AuthProvider failed to initialise");
 }
 
