@@ -1,7 +1,8 @@
-import { ShieldCheck, Sparkles, Leaf, Waves, LogIn } from "lucide-react";
+import { ShieldCheck, Sparkles, Leaf, Waves, LogIn, User2 } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import waterpod from "@/assets/waterpod.jpg";
 import { Logo } from "./primitives";
+import { useOptionalAuth } from "@/hooks/useAuth";
 
 const pillars = [
   { icon: Waves, title: "Pure Water", body: "Borehole to bottle, verified at every step." },
@@ -11,6 +12,8 @@ const pillars = [
 ];
 
 export function Hero() {
+  const auth = useOptionalAuth();
+
   return (
     <header className="relative overflow-hidden bg-navy text-navy-foreground">
       <div
