@@ -29,8 +29,28 @@ export const Route = createFileRoute("/auth")({
     ],
     links: [{ rel: "canonical", href: "https://milimani-ai-waterflow.lovable.app/auth" }],
   }),
-  component: AuthPage,
+  component: AuthRoute,
 });
+
+/** Guard: only render the form once the auth context is available. */
+export function AuthRoute() {
+  const auth = useOptionalAuth();
+
+  return (
+    <AuthErrorBoundary>
+      {auth ? (
+        <AuthPage auth={auth} />
+      ) : (
+        <main
+          className="flex min-h-screen items-center justify-center bg-secondary/50 px-6"
+          aria-busy="true"
+        >
+          <p className="text-sm text-muted-foreground">Preparing secure sign-in…</p>
+        </main>
+      )}
+    </AuthErrorBoundary>
+  );
+}
 
 function safePath(value: string | undefined): string {
   if (!value || !value.startsWith("/") || value.startsWith("//")) return "/shop";
