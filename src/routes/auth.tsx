@@ -57,7 +57,7 @@ function safePath(value: string | undefined): string {
   return value;
 }
 
-function AuthPage() {
+function AuthPage({ auth }: { auth: NonNullable<ReturnType<typeof useOptionalAuth>> }) {
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
