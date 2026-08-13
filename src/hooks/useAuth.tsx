@@ -84,3 +84,8 @@ export function useAuth(): AuthValue {
   if (!ctx) throw new Error("useAuth must be used inside AuthProvider");
   return ctx;
 }
+
+/** Returns null instead of throwing when the provider is not mounted yet. */
+export function useOptionalAuth(): AuthValue | null {
+  return useContext(AuthContext);
+}
