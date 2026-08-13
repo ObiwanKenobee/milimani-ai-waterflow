@@ -1,4 +1,4 @@
-import { Link, useRouterState } from "@tanstack/react-router";
+import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { ShoppingCart, LogIn, LayoutDashboard, User2 } from "lucide-react";
 import { Logo } from "@/components/milimani/primitives";
@@ -8,6 +8,13 @@ import { fetchCart } from "@/lib/cart";
 export function SiteHeader() {
   const { user, isStaff, signOut } = useAuth();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const href = useRouterState({ select: (s) => s.location.href });
+  const navigate = useNavigate();
+
+  async function handleSignOut() {
+    await signOut();
+    void navigate({ to: "/", replace: true });
+  }
 
   const { data: cart } = useQuery({
     queryKey: ["cart", user?.id],
@@ -73,7 +80,7 @@ export function SiteHeader() {
                 <User2 className="size-4" />
               </Link>
               <button
-                onClick={() => void signOut()}
+                onClick={() => void handleSignOut()}
                 className="rounded-lg px-3 py-2 text-sm text-muted-foreground transition-colors hover:text-navy"
               >
                 Sign out
@@ -82,7 +89,7 @@ export function SiteHeader() {
           ) : (
             <Link
               to="/auth"
-              search={{ redirect: undefined }}
+              search={{ redirect: href }}
               className="flex items-center gap-1.5 rounded-lg bg-gradient-water px-3.5 py-2 text-sm font-medium text-water-foreground"
             >
               <LogIn className="size-4" /> Sign in

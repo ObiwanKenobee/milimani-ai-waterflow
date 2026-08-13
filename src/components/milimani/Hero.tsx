@@ -55,7 +55,7 @@ export function Hero() {
             ) : (
               <Link
                 to="/auth"
-                search={{ redirect: undefined }}
+                search={{ redirect: "/shop" }}
                 className="inline-flex items-center gap-1.5 rounded-full bg-gradient-water px-4 py-2 text-sm font-medium text-water-foreground"
               >
                 <LogIn className="size-4" /> Sign in
