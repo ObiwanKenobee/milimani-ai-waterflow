@@ -64,7 +64,7 @@ function AuthPage({ auth }: { auth: NonNullable<ReturnType<typeof useOptionalAut
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
   const [busy, setBusy] = useState(false);
-  const { user } = useAuth();
+  const { user } = auth;
   const navigate = useNavigate();
   const search = useSearch({ from: "/auth" });
   const next = safePath(search.redirect);
