@@ -1,6 +1,8 @@
-import { ShieldCheck, Sparkles, Leaf, Waves } from "lucide-react";
+import { ShieldCheck, Sparkles, Leaf, Waves, LogIn, User2 } from "lucide-react";
+import { Link } from "@tanstack/react-router";
 import waterpod from "@/assets/waterpod.jpg";
 import { Logo } from "./primitives";
+import { useOptionalAuth } from "@/hooks/useAuth";
 
 const pillars = [
   { icon: Waves, title: "Pure Water", body: "Borehole to bottle, verified at every step." },
@@ -10,6 +12,8 @@ const pillars = [
 ];
 
 export function Hero() {
+  const auth = useOptionalAuth();
+
   return (
     <header className="relative overflow-hidden bg-navy text-navy-foreground">
       <div
@@ -34,12 +38,30 @@ export function Hero() {
               Network
             </a>
           </div>
-          <a
-            href="#dashboard"
-            className="rounded-full bg-gradient-water px-4 py-2 text-sm font-medium text-water-foreground"
-          >
-            See the platform
-          </a>
+          <div className="flex items-center gap-2">
+            <Link
+              to="/shop"
+              className="hidden rounded-full px-4 py-2 text-sm font-medium text-navy-foreground/80 transition-colors hover:text-navy-foreground sm:inline-flex"
+            >
+              Shop water
+            </Link>
+            {auth?.user ? (
+              <Link
+                to="/account"
+                className="inline-flex items-center gap-1.5 rounded-full bg-gradient-water px-4 py-2 text-sm font-medium text-water-foreground"
+              >
+                <User2 className="size-4" /> My account
+              </Link>
+            ) : (
+              <Link
+                to="/auth"
+                search={{ redirect: undefined }}
+                className="inline-flex items-center gap-1.5 rounded-full bg-gradient-water px-4 py-2 text-sm font-medium text-water-foreground"
+              >
+                <LogIn className="size-4" /> Sign in
+              </Link>
+            )}
+          </div>
         </nav>
 
         <div className="grid items-center gap-12 py-16 lg:grid-cols-[1.05fr_1fr] lg:py-24">

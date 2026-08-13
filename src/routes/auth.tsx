@@ -3,7 +3,8 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
-import { useAuth } from "@/hooks/useAuth";
+import { useOptionalAuth } from "@/hooks/useAuth";
+import { AuthErrorBoundary } from "@/components/app/AuthErrorBoundary";
 import { Logo } from "@/components/milimani/primitives";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,22 +29,42 @@ export const Route = createFileRoute("/auth")({
     ],
     links: [{ rel: "canonical", href: "https://milimani-ai-waterflow.lovable.app/auth" }],
   }),
-  component: AuthPage,
+  component: AuthRoute,
 });
+
+/** Guard: only render the form once the auth context is available. */
+export function AuthRoute() {
+  const auth = useOptionalAuth();
+
+  return (
+    <AuthErrorBoundary>
+      {auth ? (
+        <AuthPage auth={auth} />
+      ) : (
+        <main
+          className="flex min-h-screen items-center justify-center bg-secondary/50 px-6"
+          aria-busy="true"
+        >
+          <p className="text-sm text-muted-foreground">Preparing secure sign-in…</p>
+        </main>
+      )}
+    </AuthErrorBoundary>
+  );
+}
 
 function safePath(value: string | undefined): string {
   if (!value || !value.startsWith("/") || value.startsWith("//")) return "/shop";
   return value;
 }
 
-function AuthPage() {
+function AuthPage({ auth }: { auth: NonNullable<ReturnType<typeof useOptionalAuth>> }) {
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
   const [busy, setBusy] = useState(false);
-  const { user } = useAuth();
+  const { user } = auth;
   const navigate = useNavigate();
   const search = useSearch({ from: "/auth" });
   const next = safePath(search.redirect);
