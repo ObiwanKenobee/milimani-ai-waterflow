@@ -106,6 +106,33 @@ export type Database = {
         }
         Relationships: []
       }
+      auth_events: {
+        Row: {
+          created_at: string
+          event: string
+          id: string
+          method: string | null
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          event: string
+          id?: string
+          method?: string | null
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          event?: string
+          id?: string
+          method?: string | null
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       delivery_zones: {
         Row: {
           city: string
@@ -418,27 +445,42 @@ export type Database = {
       }
       profiles: {
         Row: {
+          contact_channel: string
           created_at: string
+          delivery_instructions: string | null
+          delivery_reminders: boolean
           email: string | null
           full_name: string | null
           id: string
           phone: string | null
+          preferred_delivery_window: string | null
+          preferred_size_label: string | null
           updated_at: string
         }
         Insert: {
+          contact_channel?: string
           created_at?: string
+          delivery_instructions?: string | null
+          delivery_reminders?: boolean
           email?: string | null
           full_name?: string | null
           id: string
           phone?: string | null
+          preferred_delivery_window?: string | null
+          preferred_size_label?: string | null
           updated_at?: string
         }
         Update: {
+          contact_channel?: string
           created_at?: string
+          delivery_instructions?: string | null
+          delivery_reminders?: boolean
           email?: string | null
           full_name?: string | null
           id?: string
           phone?: string | null
+          preferred_delivery_window?: string | null
+          preferred_size_label?: string | null
           updated_at?: string
         }
         Relationships: []
