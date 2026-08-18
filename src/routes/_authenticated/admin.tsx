@@ -102,7 +102,37 @@ function AdminConsole() {
             </div>
           ))}
         </div>
+
+        {isAdmin ? (
+          <section className="surface-card mt-8 p-5">
+            <h2 className="font-display font-semibold text-navy">Auth activity (admins only)</h2>
+            {(authEvents ?? []).length === 0 ? (
+              <p className="mt-3 text-sm text-muted-foreground">No auth activity recorded yet.</p>
+            ) : (
+              <ul className="mt-4 space-y-2 text-sm">
+                {(authEvents ?? []).map((e) => (
+                  <li
+                    key={e.id}
+                    className="flex flex-wrap justify-between gap-2 rounded-lg border border-input p-3"
+                  >
+                    <span className="font-medium text-navy">
+                      {e.event === "sign_in" ? "Signed in" : "Signed out"}
+                      {e.method ? ` · ${e.method}` : ""}
+                    </span>
+                    <span className="font-mono text-xs text-muted-foreground">
+                      {e.user_id.slice(0, 8)}…
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      {new Date(e.created_at).toLocaleString("en-KE")}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+        ) : null}
       </main>
+
     </>
   );
 }
