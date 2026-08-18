@@ -21,7 +21,15 @@ export const Route = createFileRoute("/_authenticated/admin")({
 });
 
 function AdminPage() {
-  const { isStaff } = useAuth();
+  return (
+    <ProtectedRoute requireStaff>
+      <AdminConsole />
+    </ProtectedRoute>
+  );
+}
+
+function AdminConsole() {
+  const { isStaff, isAdmin } = useAuth();
   const queryClient = useQueryClient();
   const advance = useServerFn(advanceOrder);
 
@@ -40,19 +48,20 @@ function AdminPage() {
     enabled: isStaff,
   });
 
-  if (!isStaff) {
-    return (
-      <>
-        <SiteHeader />
-        <main className="mx-auto max-w-3xl px-6 py-12">
-          <p className="surface-card p-10 text-center text-muted-foreground">
-            This console is for Milimani Fresh staff.{" "}
-            <Link to="/" className="text-water hover:underline">Back home</Link>
-          </p>
-        </main>
-      </>
-    );
-  }
+  const { data: authEvents } = useQuery({
+    queryKey: ["admin-auth-events"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("auth_events")
+        .select("id, user_id, event, method, created_at")
+        .order("created_at", { ascending: false })
+        .limit(25);
+      if (error) throw new Error(error.message);
+      return data;
+    },
+    enabled: isAdmin,
+  });
+
 
   async function next(orderId: string, status: string) {
     const i = ORDER_FLOW.indexOf(status as (typeof ORDER_FLOW)[number]);
