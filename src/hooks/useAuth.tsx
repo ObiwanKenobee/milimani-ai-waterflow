@@ -1,8 +1,18 @@
-import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import type { Session, User } from "@supabase/supabase-js";
 import { useRouter } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { logAuthEvent } from "@/lib/auth-events";
 import { ADMIN_ROLES, STAFF_ROLES, type AppRole } from "@/lib/roles";
 
 type AuthValue = {
@@ -10,6 +20,8 @@ type AuthValue = {
   user: User | null;
   roles: AppRole[];
   loading: boolean;
+  rolesLoading: boolean;
+  sessionExpired: boolean;
   isStaff: boolean;
   isAdmin: boolean;
   hasRole: (role: AppRole) => boolean;
@@ -22,8 +34,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [roles, setRoles] = useState<AppRole[]>([]);
   const [loading, setLoading] = useState(true);
+  const [rolesLoading, setRolesLoading] = useState(true);
+  const [sessionExpired, setSessionExpired] = useState(false);
+  const signingOutRef = useRef(false);
   const router = useRouter();
   const queryClient = useQueryClient();
+
 
   useEffect(() => {
     let hadSession = false;
