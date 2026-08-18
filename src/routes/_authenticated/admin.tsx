@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
@@ -7,7 +7,9 @@ import { useAuth } from "@/hooks/useAuth";
 import { formatKsh, ORDER_FLOW } from "@/lib/roles";
 import { advanceOrder } from "@/lib/orders.functions";
 import { SiteHeader } from "@/components/app/SiteHeader";
+import { ProtectedRoute } from "@/components/app/ProtectedRoute";
 import { Button } from "@/components/ui/button";
+
 
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({
@@ -21,7 +23,15 @@ export const Route = createFileRoute("/_authenticated/admin")({
 });
 
 function AdminPage() {
-  const { isStaff } = useAuth();
+  return (
+    <ProtectedRoute requireStaff>
+      <AdminConsole />
+    </ProtectedRoute>
+  );
+}
+
+function AdminConsole() {
+  const { isStaff, isAdmin } = useAuth();
   const queryClient = useQueryClient();
   const advance = useServerFn(advanceOrder);
 
@@ -40,19 +50,20 @@ function AdminPage() {
     enabled: isStaff,
   });
 
-  if (!isStaff) {
-    return (
-      <>
-        <SiteHeader />
-        <main className="mx-auto max-w-3xl px-6 py-12">
-          <p className="surface-card p-10 text-center text-muted-foreground">
-            This console is for Milimani Fresh staff.{" "}
-            <Link to="/" className="text-water hover:underline">Back home</Link>
-          </p>
-        </main>
-      </>
-    );
-  }
+  const { data: authEvents } = useQuery({
+    queryKey: ["admin-auth-events"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("auth_events")
+        .select("id, user_id, event, method, created_at")
+        .order("created_at", { ascending: false })
+        .limit(25);
+      if (error) throw new Error(error.message);
+      return data;
+    },
+    enabled: isAdmin,
+  });
+
 
   async function next(orderId: string, status: string) {
     const i = ORDER_FLOW.indexOf(status as (typeof ORDER_FLOW)[number]);
@@ -91,7 +102,37 @@ function AdminPage() {
             </div>
           ))}
         </div>
+
+        {isAdmin ? (
+          <section className="surface-card mt-8 p-5">
+            <h2 className="font-display font-semibold text-navy">Auth activity (admins only)</h2>
+            {(authEvents ?? []).length === 0 ? (
+              <p className="mt-3 text-sm text-muted-foreground">No auth activity recorded yet.</p>
+            ) : (
+              <ul className="mt-4 space-y-2 text-sm">
+                {(authEvents ?? []).map((e) => (
+                  <li
+                    key={e.id}
+                    className="flex flex-wrap justify-between gap-2 rounded-lg border border-input p-3"
+                  >
+                    <span className="font-medium text-navy">
+                      {e.event === "sign_in" ? "Signed in" : "Signed out"}
+                      {e.method ? ` · ${e.method}` : ""}
+                    </span>
+                    <span className="font-mono text-xs text-muted-foreground">
+                      {e.user_id.slice(0, 8)}…
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      {new Date(e.created_at).toLocaleString("en-KE")}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+        ) : null}
       </main>
+
     </>
   );
 }
