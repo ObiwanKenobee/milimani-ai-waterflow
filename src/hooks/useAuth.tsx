@@ -81,15 +81,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const userId = session?.user?.id;
     if (!userId) {
       setRoles([]);
+      setRolesLoading(false);
       return;
     }
     let cancelled = false;
+    setRolesLoading(true);
     supabase
       .from("user_roles")
       .select("role")
       .eq("user_id", userId)
       .then(({ data }) => {
-        if (!cancelled) setRoles((data ?? []).map((r) => r.role as AppRole));
+        if (cancelled) return;
+        setRoles((data ?? []).map((r) => r.role as AppRole));
+        setRolesLoading(false);
       });
     return () => {
       cancelled = true;
@@ -102,16 +106,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       user: session?.user ?? null,
       roles,
       loading,
+      rolesLoading,
+      sessionExpired,
       isStaff: roles.some((r) => STAFF_ROLES.includes(r)),
       isAdmin: roles.some((r) => ADMIN_ROLES.includes(r)),
       hasRole: (role) => roles.includes(role),
       signOut: async () => {
+        signingOutRef.current = true;
+        const userId = session?.user?.id;
+        if (userId) await logAuthEvent(userId, "sign_out");
         await queryClient.cancelQueries();
         queryClient.clear();
         await supabase.auth.signOut();
+        setSessionExpired(false);
+        signingOutRef.current = false;
       },
     };
-  }, [session, roles, loading, queryClient]);
+  }, [session, roles, loading, rolesLoading, sessionExpired, queryClient]);
+
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
