@@ -26,19 +26,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient();
 
   useEffect(() => {
+    let hadSession = false;
     const { data: sub } = supabase.auth.onAuthStateChange((event, nextSession) => {
       setSession(nextSession);
+      if (nextSession) hadSession = true;
+
+      if (event === "SIGNED_IN" && nextSession?.user) {
+        void logAuthEvent(
+          nextSession.user.id,
+          "sign_in",
+          nextSession.user.app_metadata?.provider ?? "password",
+        );
+      }
+
+      // Expired / revoked session: Supabase emits SIGNED_OUT (or a null-session
+      // token refresh) without the user clicking sign out.
+      if (!nextSession && hadSession && !signingOutRef.current) {
+        hadSession = false;
+        setSessionExpired(true);
+        toast.info("Your session expired. Please sign in again.");
+      }
+
       if (event === "SIGNED_IN" || event === "SIGNED_OUT" || event === "USER_UPDATED") {
         router.invalidate();
         if (event !== "SIGNED_OUT") queryClient.invalidateQueries();
       }
     });
     supabase.auth.getSession().then(({ data }) => {
+      if (data.session) hadSession = true;
       setSession(data.session);
       setLoading(false);
     });
     return () => sub.subscription.unsubscribe();
   }, [router, queryClient]);
+
 
   useEffect(() => {
     const userId = session?.user?.id;
