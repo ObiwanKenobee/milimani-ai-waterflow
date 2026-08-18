@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
@@ -7,7 +7,9 @@ import { useAuth } from "@/hooks/useAuth";
 import { formatKsh, ORDER_FLOW } from "@/lib/roles";
 import { advanceOrder } from "@/lib/orders.functions";
 import { SiteHeader } from "@/components/app/SiteHeader";
+import { ProtectedRoute } from "@/components/app/ProtectedRoute";
 import { Button } from "@/components/ui/button";
+
 
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({
