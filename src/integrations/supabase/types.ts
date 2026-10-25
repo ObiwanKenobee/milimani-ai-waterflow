@@ -383,6 +383,108 @@ export type Database = {
           },
         ]
       }
+      production_batches: {
+        Row: {
+          batch_number: string
+          created_at: string
+          id: string
+          node_id: string
+          notes: string | null
+          planned_by: string | null
+          planned_units: number
+          produced_at: string | null
+          produced_units: number
+          product_id: string
+          released_at: string | null
+          released_by: string | null
+          status: Database["public"]["Enums"]["batch_status"]
+          updated_at: string
+        }
+        Insert: {
+          batch_number?: string
+          created_at?: string
+          id?: string
+          node_id: string
+          notes?: string | null
+          planned_by?: string | null
+          planned_units?: number
+          produced_at?: string | null
+          produced_units?: number
+          product_id: string
+          released_at?: string | null
+          released_by?: string | null
+          status?: Database["public"]["Enums"]["batch_status"]
+          updated_at?: string
+        }
+        Update: {
+          batch_number?: string
+          created_at?: string
+          id?: string
+          node_id?: string
+          notes?: string | null
+          planned_by?: string | null
+          planned_units?: number
+          produced_at?: string | null
+          produced_units?: number
+          product_id?: string
+          released_at?: string | null
+          released_by?: string | null
+          status?: Database["public"]["Enums"]["batch_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "production_batches_node_id_fkey"
+            columns: ["node_id"]
+            isOneToOne: false
+            referencedRelation: "production_nodes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "production_batches_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      production_nodes: {
+        Row: {
+          capacity_l_per_day: number
+          code: string
+          created_at: string
+          id: string
+          location_text: string
+          name: string
+          notes: string | null
+          status: Database["public"]["Enums"]["node_status"]
+          updated_at: string
+        }
+        Insert: {
+          capacity_l_per_day?: number
+          code: string
+          created_at?: string
+          id?: string
+          location_text: string
+          name: string
+          notes?: string | null
+          status?: Database["public"]["Enums"]["node_status"]
+          updated_at?: string
+        }
+        Update: {
+          capacity_l_per_day?: number
+          code?: string
+          created_at?: string
+          id?: string
+          location_text?: string
+          name?: string
+          notes?: string | null
+          status?: Database["public"]["Enums"]["node_status"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
       products: {
         Row: {
           created_at: string
@@ -485,6 +587,97 @@ export type Database = {
         }
         Relationships: []
       }
+      quality_tests: {
+        Row: {
+          batch_id: string
+          created_at: string
+          id: string
+          notes: string | null
+          result: Database["public"]["Enums"]["quality_result"]
+          test_type: string
+          tested_at: string
+          tested_by: string | null
+          tester_label: string
+          unit: string
+          value: number
+        }
+        Insert: {
+          batch_id: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          result?: Database["public"]["Enums"]["quality_result"]
+          test_type: string
+          tested_at?: string
+          tested_by?: string | null
+          tester_label?: string
+          unit: string
+          value: number
+        }
+        Update: {
+          batch_id?: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          result?: Database["public"]["Enums"]["quality_result"]
+          test_type?: string
+          tested_at?: string
+          tested_by?: string | null
+          tester_label?: string
+          unit?: string
+          value?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quality_tests_batch_id_fkey"
+            columns: ["batch_id"]
+            isOneToOne: false
+            referencedRelation: "production_batches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      stock_movements: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          delta: number
+          id: string
+          note: string | null
+          product_id: string
+          reason: Database["public"]["Enums"]["movement_reason"]
+          reference: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          delta: number
+          id?: string
+          note?: string | null
+          product_id: string
+          reason: Database["public"]["Enums"]["movement_reason"]
+          reference?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          delta?: number
+          id?: string
+          note?: string | null
+          product_id?: string
+          reason?: Database["public"]["Enums"]["movement_reason"]
+          reference?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stock_movements_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -575,6 +768,25 @@ export type Database = {
         | "business_customer"
         | "household_customer"
         | "pod_operator"
+      batch_status:
+        | "planned"
+        | "in_production"
+        | "quality_check"
+        | "released"
+        | "held"
+      movement_reason:
+        | "production"
+        | "sale"
+        | "adjustment"
+        | "wastage"
+        | "transfer"
+        | "customer_return"
+      node_status:
+        | "planned"
+        | "commissioning"
+        | "active"
+        | "maintenance"
+        | "decommissioned"
       order_status:
         | "cart"
         | "checkout"
@@ -599,6 +811,7 @@ export type Database = {
         | "failed"
         | "refunded"
         | "partially_refunded"
+      quality_result: "pending" | "pass" | "fail"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -743,6 +956,28 @@ export const Constants = {
         "household_customer",
         "pod_operator",
       ],
+      batch_status: [
+        "planned",
+        "in_production",
+        "quality_check",
+        "released",
+        "held",
+      ],
+      movement_reason: [
+        "production",
+        "sale",
+        "adjustment",
+        "wastage",
+        "transfer",
+        "customer_return",
+      ],
+      node_status: [
+        "planned",
+        "commissioning",
+        "active",
+        "maintenance",
+        "decommissioned",
+      ],
       order_status: [
         "cart",
         "checkout",
@@ -769,6 +1004,7 @@ export const Constants = {
         "refunded",
         "partially_refunded",
       ],
+      quality_result: ["pending", "pass", "fail"],
     },
   },
 } as const
