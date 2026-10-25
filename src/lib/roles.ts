@@ -38,6 +38,31 @@ export const STAFF_ROLES: AppRole[] = [
 
 export const ADMIN_ROLES: AppRole[] = ["super_admin", "executive", "operations_manager"];
 
+/** Roles that may plan and advance production batches. */
+export const PRODUCTION_ROLES: AppRole[] = [
+  "super_admin",
+  "executive",
+  "operations_manager",
+  "production_manager",
+  "pod_operator",
+];
+
+/** Roles that may record water-quality test results. */
+export const QUALITY_ROLES: AppRole[] = [
+  "super_admin",
+  "executive",
+  "operations_manager",
+  "quality_manager",
+];
+
+/** Roles that may record stock movements and adjust inventory. */
+export const INVENTORY_ROLES: AppRole[] = [
+  "super_admin",
+  "executive",
+  "operations_manager",
+  "inventory_manager",
+];
+
 export const ORDER_FLOW: OrderStatus[] = [
   "paid",
   "confirmed",
