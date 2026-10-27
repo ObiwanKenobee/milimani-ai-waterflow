@@ -26,6 +26,7 @@ export function SiteHeader() {
   const links = [
     { to: "/shop", label: "Shop" },
     { to: "/orders", label: "My orders" },
+    ...(isStaff ? [{ to: "/operations", label: "Operations" }] : []),
   ];
 
   return (
