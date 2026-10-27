@@ -182,7 +182,7 @@ export const advanceBatch = createServerFn({ method: "POST" })
     if (data.toStatus === "released") {
       const { error: movementError } = await supabaseAdmin.from("stock_movements").insert({
         product_id: batch.product_id,
-        delta: batch.produced_units,
+        delta: effectiveProduced,
         reason: "production",
         reference: batch.batch_number,
         created_by: userId,
@@ -195,7 +195,7 @@ export const advanceBatch = createServerFn({ method: "POST" })
         .maybeSingle();
       const { error: stockError } = await supabaseAdmin
         .from("products")
-        .update({ stock: Number(product?.stock ?? 0) + batch.produced_units })
+        .update({ stock: Number(product?.stock ?? 0) + effectiveProduced })
         .eq("id", batch.product_id);
       if (stockError) throw new Error(stockError.message);
     }
@@ -205,7 +205,7 @@ export const advanceBatch = createServerFn({ method: "POST" })
       action: `batch.${data.toStatus}`,
       entity_type: "production_batch",
       entity_id: batch.id,
-      details: { from: batch.status, to: data.toStatus, produced_units: batch.produced_units },
+      details: { from: batch.status, to: data.toStatus, produced_units: effectiveProduced },
     });
 
     return { ok: true as const, status: data.toStatus };
