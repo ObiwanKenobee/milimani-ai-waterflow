@@ -144,6 +144,8 @@ export const advanceBatch = createServerFn({ method: "POST" })
       throw new Error(`A ${batch.status.replaceAll("_", " ")} batch cannot move there.`);
     }
 
+    const effectiveProduced = data.producedUnits ?? batch.produced_units;
+
     if (data.toStatus === "released") {
       const { data: tests } = await supabase
         .from("quality_tests")
@@ -154,7 +156,7 @@ export const advanceBatch = createServerFn({ method: "POST" })
           "A batch can only be released with at least one passing quality test and no failing tests.",
         );
       }
-      if (batch.produced_units <= 0) {
+      if (effectiveProduced <= 0) {
         throw new Error("Record the produced quantity before releasing this batch.");
       }
     }
