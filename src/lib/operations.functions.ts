@@ -144,12 +144,7 @@ export const advanceBatch = createServerFn({ method: "POST" })
       throw new Error(`A ${batch.status.replaceAll("_", " ")} batch cannot move there.`);
     }
 
-    if (data.producedUnits !== undefined && batch.status === "in_production") {
-      await supabaseAdmin
-        .from("production_batches")
-        .update({ produced_units: data.producedUnits });
-      // stored below in the single status update instead — keep produced_units atomic
-    }
+    const effectiveProduced = data.producedUnits ?? batch.produced_units;
 
     if (data.toStatus === "released") {
       const { data: tests } = await supabase
@@ -161,7 +156,7 @@ export const advanceBatch = createServerFn({ method: "POST" })
           "A batch can only be released with at least one passing quality test and no failing tests.",
         );
       }
-      if (batch.produced_units <= 0) {
+      if (effectiveProduced <= 0) {
         throw new Error("Record the produced quantity before releasing this batch.");
       }
     }
@@ -187,17 +182,22 @@ export const advanceBatch = createServerFn({ method: "POST" })
     if (data.toStatus === "released") {
       const { error: movementError } = await supabaseAdmin.from("stock_movements").insert({
         product_id: batch.product_id,
-        delta: batch.produced_units,
+        delta: effectiveProduced,
         reason: "production",
         reference: batch.batch_number,
         created_by: userId,
       });
       if (movementError) throw new Error(movementError.message);
-      const { error: rpcError } = await supabaseAdmin.rpc("increment_product_stock", {
-        _product_id: batch.product_id,
-        _delta: batch.produced_units,
-      });
-      if (rpcError) throw new Error(rpcError.message);
+      const { data: product } = await supabaseAdmin
+        .from("products")
+        .select("stock")
+        .eq("id", batch.product_id)
+        .maybeSingle();
+      const { error: stockError } = await supabaseAdmin
+        .from("products")
+        .update({ stock: Number(product?.stock ?? 0) + effectiveProduced })
+        .eq("id", batch.product_id);
+      if (stockError) throw new Error(stockError.message);
     }
 
     await supabaseAdmin.from("audit_logs").insert({
@@ -205,7 +205,7 @@ export const advanceBatch = createServerFn({ method: "POST" })
       action: `batch.${data.toStatus}`,
       entity_type: "production_batch",
       entity_id: batch.id,
-      details: { from: batch.status, to: data.toStatus, produced_units: batch.produced_units },
+      details: { from: batch.status, to: data.toStatus, produced_units: effectiveProduced },
     });
 
     return { ok: true as const, status: data.toStatus };
