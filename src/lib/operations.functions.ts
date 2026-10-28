@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
+import type { Database } from "@/integrations/supabase/types";
 import { canReleaseBatch } from "@/lib/operations";
 
 const CreateBatchInput = z.object({
@@ -42,17 +43,27 @@ type OperationRole =
   | "executive"
   | "super_admin";
 
-async function assertRole(
-  supabase: { rpc: (fn: string, args: Record<string, unknown>) => Promise<{ data: unknown }> },
-  userId: string,
-  roles: OperationRole[],
-) {
-  const { data: allowed } = await supabase.rpc("has_any_role", {
-    _user_id: userId,
-    _roles: roles,
-  });
-  if (!allowed) throw new Error("You do not have permission for this action.");
-}
+const PRODUCTION_ACTION_ROLES: OperationRole[] = [
+  "production_manager",
+  "pod_operator",
+  "operations_manager",
+  "executive",
+  "super_admin",
+];
+const QUALITY_ACTION_ROLES: OperationRole[] = [
+  "quality_manager",
+  "operations_manager",
+  "executive",
+  "super_admin",
+];
+const INVENTORY_ACTION_ROLES: OperationRole[] = [
+  "inventory_manager",
+  "operations_manager",
+  "executive",
+  "super_admin",
+];
+
+const PERMISSION_DENIED = "You do not have permission for this action.";
 
 /** Plan a new production batch on a WaterPod node. */
 export const createBatch = createServerFn({ method: "POST" })
@@ -60,13 +71,12 @@ export const createBatch = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => CreateBatchInput.parse(input))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
-    await assertRole(supabase, userId, [
-      "production_manager",
-      "pod_operator",
-      "operations_manager",
-      "executive",
-      "super_admin",
-    ]);
+
+    const { data: allowed } = await supabase.rpc("has_any_role", {
+      _user_id: userId,
+      _roles: PRODUCTION_ACTION_ROLES,
+    });
+    if (!allowed) throw new Error(PERMISSION_DENIED);
 
     const { data: node } = await supabase
       .from("production_nodes")
@@ -117,13 +127,11 @@ export const advanceBatch = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => AdvanceBatchInput.parse(input))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
-    await assertRole(supabase, userId, [
-      "production_manager",
-      "pod_operator",
-      "operations_manager",
-      "executive",
-      "super_admin",
-    ]);
+    const { data: allowed } = await supabase.rpc("has_any_role", {
+      _user_id: userId,
+      _roles: PRODUCTION_ACTION_ROLES,
+    });
+    if (!allowed) throw new Error(PERMISSION_DENIED);
 
     const { data: batch, error } = await supabase
       .from("production_batches")
@@ -164,14 +172,14 @@ export const advanceBatch = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const producedAt =
       data.toStatus === "quality_check" && !batch.produced_at ? new Date().toISOString() : undefined;
-    const patch: Record<string, unknown> = {
+    const patch: Database["public"]["Tables"]["production_batches"]["Update"] = {
       status: data.toStatus,
       produced_at: producedAt ?? batch.produced_at,
     };
-    if (data.producedUnits !== undefined) patch.produced_units = data.producedUnits;
+    if (data.producedUnits !== undefined) patch["produced_units"] = data.producedUnits;
     if (data.toStatus === "released") {
-      patch.released_by = userId;
-      patch.released_at = new Date().toISOString();
+      patch["released_by"] = userId;
+      patch["released_at"] = new Date().toISOString();
     }
     const { error: updateError } = await supabaseAdmin
       .from("production_batches")
@@ -217,12 +225,11 @@ export const recordQualityTest = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => QualityTestInput.parse(input))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
-    await assertRole(supabase, userId, [
-      "quality_manager",
-      "operations_manager",
-      "executive",
-      "super_admin",
-    ]);
+    const { data: allowed } = await supabase.rpc("has_any_role", {
+      _user_id: userId,
+      _roles: QUALITY_ACTION_ROLES,
+    });
+    if (!allowed) throw new Error(PERMISSION_DENIED);
 
     const { data: batch } = await supabase
       .from("production_batches")
@@ -260,12 +267,11 @@ export const adjustStock = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => AdjustStockInput.parse(input))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
-    await assertRole(supabase, userId, [
-      "inventory_manager",
-      "operations_manager",
-      "executive",
-      "super_admin",
-    ]);
+    const { data: allowed } = await supabase.rpc("has_any_role", {
+      _user_id: userId,
+      _roles: INVENTORY_ACTION_ROLES,
+    });
+    if (!allowed) throw new Error(PERMISSION_DENIED);
 
     const { data: product } = await supabase
       .from("products")
