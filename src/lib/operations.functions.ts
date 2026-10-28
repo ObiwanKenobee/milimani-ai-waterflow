@@ -127,13 +127,11 @@ export const advanceBatch = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => AdvanceBatchInput.parse(input))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
-    await assertRole(supabase, userId, [
-      "production_manager",
-      "pod_operator",
-      "operations_manager",
-      "executive",
-      "super_admin",
-    ]);
+    const { data: allowed } = await supabase.rpc("has_any_role", {
+      _user_id: userId,
+      _roles: PRODUCTION_ACTION_ROLES,
+    });
+    if (!allowed) throw new Error(PERMISSION_DENIED);
 
     const { data: batch, error } = await supabase
       .from("production_batches")
@@ -227,12 +225,11 @@ export const recordQualityTest = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => QualityTestInput.parse(input))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
-    await assertRole(supabase, userId, [
-      "quality_manager",
-      "operations_manager",
-      "executive",
-      "super_admin",
-    ]);
+    const { data: allowed } = await supabase.rpc("has_any_role", {
+      _user_id: userId,
+      _roles: QUALITY_ACTION_ROLES,
+    });
+    if (!allowed) throw new Error(PERMISSION_DENIED);
 
     const { data: batch } = await supabase
       .from("production_batches")
@@ -270,12 +267,11 @@ export const adjustStock = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => AdjustStockInput.parse(input))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
-    await assertRole(supabase, userId, [
-      "inventory_manager",
-      "operations_manager",
-      "executive",
-      "super_admin",
-    ]);
+    const { data: allowed } = await supabase.rpc("has_any_role", {
+      _user_id: userId,
+      _roles: INVENTORY_ACTION_ROLES,
+    });
+    if (!allowed) throw new Error(PERMISSION_DENIED);
 
     const { data: product } = await supabase
       .from("products")
