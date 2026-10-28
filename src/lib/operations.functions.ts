@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
+import type { Database } from "@/integrations/supabase/types";
 import { canReleaseBatch } from "@/lib/operations";
 
 const CreateBatchInput = z.object({
@@ -42,11 +43,14 @@ type OperationRole =
   | "executive"
   | "super_admin";
 
-async function assertRole(
-  supabase: { rpc: (fn: string, args: Record<string, unknown>) => Promise<{ data: unknown }> },
-  userId: string,
-  roles: OperationRole[],
-) {
+type RoleCheckClient = {
+  rpc: (
+    fn: "has_any_role",
+    args: { _user_id: string; _roles: OperationRole[] },
+  ) => Promise<{ data: unknown }>;
+};
+
+async function assertRole(supabase: RoleCheckClient, userId: string, roles: OperationRole[]) {
   const { data: allowed } = await supabase.rpc("has_any_role", {
     _user_id: userId,
     _roles: roles,
@@ -164,14 +168,14 @@ export const advanceBatch = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const producedAt =
       data.toStatus === "quality_check" && !batch.produced_at ? new Date().toISOString() : undefined;
-    const patch: Record<string, unknown> = {
+    const patch: Database["public"]["Tables"]["production_batches"]["Update"] = {
       status: data.toStatus,
       produced_at: producedAt ?? batch.produced_at,
     };
-    if (data.producedUnits !== undefined) patch.produced_units = data.producedUnits;
+    if (data.producedUnits !== undefined) patch["produced_units"] = data.producedUnits;
     if (data.toStatus === "released") {
-      patch.released_by = userId;
-      patch.released_at = new Date().toISOString();
+      patch["released_by"] = userId;
+      patch["released_at"] = new Date().toISOString();
     }
     const { error: updateError } = await supabaseAdmin
       .from("production_batches")
