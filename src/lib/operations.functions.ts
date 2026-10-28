@@ -43,20 +43,27 @@ type OperationRole =
   | "executive"
   | "super_admin";
 
-type RoleCheckClient = {
-  rpc: (
-    fn: "has_any_role",
-    args: { _user_id: string; _roles: OperationRole[] },
-  ) => Promise<{ data: unknown }>;
-};
+const PRODUCTION_ACTION_ROLES: OperationRole[] = [
+  "production_manager",
+  "pod_operator",
+  "operations_manager",
+  "executive",
+  "super_admin",
+];
+const QUALITY_ACTION_ROLES: OperationRole[] = [
+  "quality_manager",
+  "operations_manager",
+  "executive",
+  "super_admin",
+];
+const INVENTORY_ACTION_ROLES: OperationRole[] = [
+  "inventory_manager",
+  "operations_manager",
+  "executive",
+  "super_admin",
+];
 
-async function assertRole(supabase: RoleCheckClient, userId: string, roles: OperationRole[]) {
-  const { data: allowed } = await supabase.rpc("has_any_role", {
-    _user_id: userId,
-    _roles: roles,
-  });
-  if (!allowed) throw new Error("You do not have permission for this action.");
-}
+const PERMISSION_DENIED = "You do not have permission for this action.";
 
 /** Plan a new production batch on a WaterPod node. */
 export const createBatch = createServerFn({ method: "POST" })
@@ -64,13 +71,12 @@ export const createBatch = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => CreateBatchInput.parse(input))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
-    await assertRole(supabase, userId, [
-      "production_manager",
-      "pod_operator",
-      "operations_manager",
-      "executive",
-      "super_admin",
-    ]);
+
+    const { data: allowed } = await supabase.rpc("has_any_role", {
+      _user_id: userId,
+      _roles: PRODUCTION_ACTION_ROLES,
+    });
+    if (!allowed) throw new Error(PERMISSION_DENIED);
 
     const { data: node } = await supabase
       .from("production_nodes")
