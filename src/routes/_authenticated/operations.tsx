@@ -6,7 +6,6 @@ import { toast } from "sonner";
 import { FlaskConical, Factory, PackageSearch, ShieldAlert } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { formatKsh } from "@/lib/roles";
 import {
   BATCH_STATUS_LABELS,
   NODE_STATUS_LABELS,
