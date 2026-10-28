@@ -644,7 +644,7 @@ function OperationsConsole() {
             <ShieldAlert className="mt-0.5 size-5 text-warn" />
             <p className="text-sm text-muted-foreground">
               Your role can view operations data, but making changes needs a production, quality or
-              inventory role. {formatKsh(0)} — ask an administrator if you need access.
+              inventory role — ask an administrator if you need access.
             </p>
           </div>
         ) : null}
